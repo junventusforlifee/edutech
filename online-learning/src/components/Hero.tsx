@@ -7,14 +7,14 @@ import Image from "next/image";
 const heroCards = [
   {
     id: 1,
-    title: "AI-powered,social learning that builds and solves real-world problems ",
-    description: "Engage.Collaborate.Solve.Learn for life",
+    title: "Human + AI Co-teaching:The future of live learning",
+    description: "Live interactive classes with human teachers and AI Co-teachers",
     image: "/learnwithaibeta.png",
     gradient: "bg-gradient-to-r from-blue-400 via-blue-300 to-indigo-300",
   },
   {
     id: 2,
-    title: "Access high quality learning on any smartphone-ultra-low data and seamless offline access",
+    title: "Smart learning.Low data.Offline ready",
     description:
       "Learn anyehere,anytime-no heavy download,no connectivity limit",
     image: "/lowdatabeta.png",
@@ -22,9 +22,9 @@ const heroCards = [
   },
   {
     id: 3,
-    title: "Hybrid learning reimagined",
+    title: "Recorded by teachers,Refined by AI",
     description:
-      "From pre-recorded videos to live online interaction—all in one seamless platform",
+      "Pre-recoreded,Post-learning.AI turns Video-lessons into true understanding",
     image: "/betaprerecorded.png",
     gradient: "bg-gradient-to-r from-purple-400 via-purple-300 to-pink-300",
   },
@@ -37,7 +37,7 @@ export default function Hero() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentCard((prev) => (prev + 1) % heroCards.length);
-    }, 4000);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,12 +53,11 @@ export default function Hero() {
           <div className="flex flex-col-reverse md:flex-row items-center gap-8">
             {/* Text Content */}
             <div className="w-full md:w-1/2 text-center md:text-left pt-4 sm:pt-6 md:pt-8">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-snug">
-                Transform learning into a social-media-like experience
-              </h1>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-snug">
+                Human-led.AI-powered.Social learning for real-world skill
+              </h2>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6">
-                We make learning as intuitive and addictive as social media, but
-                with real world skill and measurable results
+                A learning platform that feels like social media - where students build essential career and life skills
               </p>
             </div>
 

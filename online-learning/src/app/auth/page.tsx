@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import AuthForm from "@/components/AuthForm";
@@ -35,7 +36,7 @@ export default function AuthPage() {
           setAuthenticated(true);
           router.push(redirect);
         } else {
-          alert(res.message || "Login failed");
+          toast.error(res.message || "Login failed");
         }
       } else {
         const res = await (
@@ -46,14 +47,14 @@ export default function AuthPage() {
           password: form.password,
         });
         if (res.success) {
-          alert("Account created successfully! Please sign in.");
+          toast.success("Account created successfully! Please sign in.");
           setIsLogin(true);
         } else {
-          alert(res.message || "Registration failed");
+          toast.error(res.message || "Registration failed");
         }
       }
     } catch (error: any) {
-      alert(error?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -68,10 +69,20 @@ export default function AuthPage() {
   async function handleForgotPassword(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((res) => setTimeout(res, 600));
-    setLoading(false);
-    alert("Password reset instructions sent to your email!");
-    setForgotPassword(false);
+    try {
+      const auth = await import("@/lib/auth");
+      const res = await auth.requestPasswordReset(form.email);
+      if (res.success) {
+        toast.success("Password reset link sent to your email!");
+        setForgotPassword(false);
+      } else {
+        toast.error(res.message || "Could not send reset link");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (forgotPassword) {

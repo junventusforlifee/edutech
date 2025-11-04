@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
 
@@ -236,36 +237,52 @@ export const me = async (req, res) => {
   }
 };
 
-// send password reset otp
-
-export const sendResetOtp = async (req, res) => {
+// send password reset link (token)
+export const sendResetLink = async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
     return res.json({ success: false, message: "Email is required" });
   }
+
   try {
     const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.json({ success: false, message: "User not found" });
-    }
+    if (!user) return res.json({ success: false, message: "User not found" });
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    // generate secure token
+    const token = crypto.randomBytes(32).toString("hex");
 
-    user.resetOtp = otp;
-    user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+    // set token and expiry (e.g., 1 hour)
+    user.resetToken = token;
+    user.resetTokenExpireAt = Date.now() + 60 * 60 * 1000; // 1 hour
 
     await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}&email=${encodeURIComponent(
+      user.email
+    )}`;
 
     const mailOption = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
-      subject: "password reset OTP",
-      text: `Your OTP for resetting your password is${otp}.use this OTP to proceed with your password`,
-    };
-    await transporter.sendMail(mailOption);
+      subject: "Password reset link",
+      text: `You requested a password reset. Click the link to reset your password: ${resetUrl}
 
-    return res.json({ success: true, message: "OTP sent to your email" });
+If you didn't request this, ignore this email. The link expires in 1 hour.`,
+    };
+
+    try {
+      await transporter.sendMail(mailOption);
+    } catch (mailErr) {
+      console.error("sendMail error (reset link):", mailErr, { mailOption });
+      // Continue: don't block the response for email issues
+    }
+
+    return res.json({
+      success: true,
+      message: "Reset link sent to your email",
+    });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
@@ -274,32 +291,29 @@ export const sendResetOtp = async (req, res) => {
 // Reset user password
 
 export const resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  const { token, newPassword, email } = req.body;
 
-  if (!email || !otp || !newPassword) {
+  if (!token || !newPassword) {
     return res.json({
       success: false,
-      message: "Email, OTP, and new password are required",
+      message: "Token and new password are required",
     });
   }
-  try {
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.json({ success: false, message: "User not found" });
-    }
-    if (user.resetOtp === "" || user.resetOtp !== otp) {
-      return res.json({ success: false, message: "Invalid OTP" });
-    }
 
-    if (user.resetOtpExpireAt < Date.now()) {
-      return res.json({ success: false, message: "OTP Expired" });
+  try {
+    // find user by token (optionally match email too)
+    const user = await userModel.findOne({ resetToken: token });
+    if (!user)
+      return res.json({ success: false, message: "Invalid or expired token" });
+
+    if (user.resetTokenExpireAt < Date.now()) {
+      return res.json({ success: false, message: "Token expired" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
     user.password = hashedPassword;
-    user.resetOtp = "";
-    user.resetOtpExpireAt = 0;
+    user.resetToken = "";
+    user.resetTokenExpireAt = 0;
 
     await user.save();
 

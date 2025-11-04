@@ -17,8 +17,9 @@ export default function Navbar() {
               <Image
                 src="/logo.png"
                 alt="Neotisa Logo"
-                width={150}
-                height={150}
+                width={120}
+                height={40}
+                priority
                 className="mr-2 items-center h-auto"
               />
             </Link>

@@ -1,7 +1,9 @@
-'use client'
-import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+"use client";
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import * as authApi from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import {
   BookOpen,
   GraduationCap,
@@ -15,32 +17,47 @@ import {
   ClipboardList,
   CheckCircle,
   LogOut,
-} from 'lucide-react'
+} from "lucide-react";
 
 export default function DashboardSidebar() {
-  const router = useRouter()
+  const router = useRouter();
 
   const items = [
-    { label: 'K12', icon: <BookOpen size={18} /> },
-    { label: 'WAEC/NECO Exam', icon: <FileText size={18} /> },
-    { label: 'JAMB', icon: <GraduationCap size={18} /> },
-    { label: 'JUPEB', icon: <Layers size={18} /> },
-    { label: '100 Level', icon: <Cpu size={18} /> },
-    { label: 'Software Development', icon: <Monitor size={18} /> },
-    { label: 'Data Science', icon: <LineChart size={18} /> },
-    { label: 'UI/UX', icon: <PenTool size={18} /> },
-    { label: 'Digital Marketing', icon: <ClipboardList size={18} /> },
-    { label: 'Join Live Class', icon: <Video size={18} /> },
-    { label: 'Assignment', icon: <CheckCircle size={18} /> },
-    { label: 'Progress', icon: <LineChart size={18} /> },
-  ]
+    { label: "K12", icon: <BookOpen size={18} /> },
+    { label: "WAEC/NECO Exam", icon: <FileText size={18} /> },
+    { label: "JAMB", icon: <GraduationCap size={18} /> },
+    { label: "JUPEB", icon: <Layers size={18} /> },
+    { label: "100 Level", icon: <Cpu size={18} /> },
+    { label: "Software Development", icon: <Monitor size={18} /> },
+    { label: "Data Science", icon: <LineChart size={18} /> },
+    { label: "UI/UX", icon: <PenTool size={18} /> },
+    { label: "Digital Marketing", icon: <ClipboardList size={18} /> },
+    { label: "Join Live Class", icon: <Video size={18} /> },
+    { label: "Assignment", icon: <CheckCircle size={18} /> },
+    { label: "Progress", icon: <LineChart size={18} /> },
+  ];
 
-  const handleLogout = () => {
-    // clear saved auth data if applicable
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/')
-  }
+  const handleLogout = async () => {
+    try {
+      // call backend to clear httpOnly cookie
+      const res = await authApi.logout();
+      if (!res.success) console.warn("Logout API returned:", res.message);
+    } catch (err) {
+      console.error("Logout request failed", err);
+    }
+
+    // clear client-side auth state and storage
+    useAuthStore.getState().setAuthenticated(false);
+    useAuthStore.getState().setUser(null);
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } catch (e) {
+      // ignore if localStorage not available
+    }
+
+    router.push("/");
+  };
 
   return (
     <div className="bg-blue-600 text-white rounded-2xl shadow-lg p-5 min-h-screen w-64">
@@ -57,16 +74,23 @@ export default function DashboardSidebar() {
 
       {/* Navigation Links */}
       <nav className="flex flex-col gap-2">
-        {items.map((i) => (
-          <Link
-            href={`/dashboard/${i.label.replace(/\s+/g, '-').toLowerCase()}`}
-            key={i.label}
-            className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-500 transition-colors"
-          >
-            <span>{i.icon}</span>
-            <span>{i.label}</span>
-          </Link>
-        ))}
+        {items.map((i) => {
+          const slug = i.label
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+
+          return (
+            <Link
+              href={`/dashboard/payment/${slug}`}
+              key={i.label}
+              className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-500 transition-colors"
+            >
+              <span>{i.icon}</span>
+              <span>{i.label}</span>
+            </Link>
+          );
+        })}
 
         {/* Logout Button */}
         <button
@@ -78,5 +102,5 @@ export default function DashboardSidebar() {
         </button>
       </nav>
     </div>
-  )
+  );
 }

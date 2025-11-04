@@ -53,7 +53,7 @@ export async function getCurrentAuth() {
 
 export async function requestPasswordReset(email: string) {
   try {
-    const { data } = await api.post("/auth/send-reset-otp", { email });
+    const { data } = await api.post("/auth/send-reset-link", { email });
     return data;
   } catch (err: any) {
     return {
@@ -64,8 +64,7 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function resetPassword(payload: {
-  email: string;
-  otp: string;
+  token: string;
   newPassword: string;
 }) {
   try {

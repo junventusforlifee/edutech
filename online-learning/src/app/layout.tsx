@@ -3,6 +3,8 @@ import "./globals.css";
 import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 export const metadata = {
   title: "Elearning Platform",
@@ -20,6 +22,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1 w-full">{children}</main>
         {/* <Footer /> */}
+        <ToastContainer position="top-right" autoClose={4000} />
       </body>
     </html>
   );

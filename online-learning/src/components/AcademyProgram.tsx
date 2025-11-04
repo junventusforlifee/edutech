@@ -55,7 +55,7 @@ type CardProps = {
 function Card({ title, description, icon, image, onClick }: CardProps) {
   return (
     <div
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-gray-100 flex flex-col h-170" // fixed height card
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-gray-100 flex flex-col h-120" // fixed height card
       onClick={onClick}
     >
       {/* Image section (50% of card height) */}

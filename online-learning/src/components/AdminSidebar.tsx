@@ -2,26 +2,45 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  Video,
-  Calendar,
-  LogOut,
-} from "lucide-react";
+import * as authApi from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
+import { LayoutDashboard, Video, Calendar, LogOut } from "lucide-react";
 
 export default function AdminSidebar() {
   const router = useRouter();
 
   const items = [
     { href: "/admin", label: "Overview", icon: <LayoutDashboard size={18} /> },
-    { href: "/admin/videos", label: "Pre-recorded Videos", icon: <Video size={18} /> },
-    { href: "/admin/schedule", label: "Schedule Live Classes", icon: <Calendar size={18} /> },
+    {
+      href: "/admin/videos",
+      label: "Pre-recorded Videos",
+      icon: <Video size={18} />,
+    },
+    {
+      href: "/admin/schedule",
+      label: "Schedule Live Classes",
+      icon: <Calendar size={18} />,
+    },
   ];
 
-  const handleLogout = () => {
-    // Clear tokens or user data if using JWT auth
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    try {
+      // Call backend to clear the httpOnly cookie
+      const res = await authApi.logout();
+      if (!res.success) console.warn("Logout API returned:", res.message);
+    } catch (err) {
+      console.error("Logout request failed", err);
+    }
+
+    // Clear client-side auth state and storage
+    useAuthStore.getState().setAuthenticated(false);
+    useAuthStore.getState().setUser(null);
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } catch (e) {
+      // ignore
+    }
 
     // Redirect to homepage
     router.push("/");
