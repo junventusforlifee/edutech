@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params?.get("token") || "";
@@ -113,5 +113,15 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={<div className="p-8 text-center">Preparing reset form...</div>}
+    >
+      <ResetPasswordPageContent />
+    </Suspense>
   );
 }
