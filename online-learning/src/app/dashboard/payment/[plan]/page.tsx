@@ -2,14 +2,12 @@ import React from "react";
 import PaymentCard from "@/components/PaymentCard";
 import PaymentLogos from "@/components/PaymentLogos";
 
-type Props = {
-  params: {
-    plan: string;
-  };
+type PaymentPageProps = {
+  params: Promise<{ plan: string }>;
 };
 
-export default async function PaymentPage({ params }: Props) {
-  const { plan } = params;
+export default async function PaymentPage({ params }: PaymentPageProps) {
+  const { plan } = await params;
   const humanLabel = plan.replace(/-/g, " ");
 
   const plans = [
