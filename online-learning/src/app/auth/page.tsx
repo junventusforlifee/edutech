@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import AuthForm from "@/components/AuthForm";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params?.get("redirect") || "/dashboard";
@@ -241,5 +241,13 @@ export default function AuthPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <AuthPageContent />
+    </Suspense>
   );
 }
