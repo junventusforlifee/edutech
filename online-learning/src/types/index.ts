@@ -15,7 +15,8 @@ export interface Testimonial {
 
 export interface AuthState {
   isAuthenticated: boolean;
-  user: null | any;
+  // a minimal user shape used across the app
+  user: null | { id?: string; name?: string; email?: string };
   login: () => void;
   logout: () => void;
 }

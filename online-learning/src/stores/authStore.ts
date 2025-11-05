@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { AuthState } from "@/types";
 
 interface AppState {
   sidebarOpen: boolean;

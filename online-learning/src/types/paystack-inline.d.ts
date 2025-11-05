@@ -4,13 +4,13 @@ declare module "@paystack/inline-js" {
     key: string;
     amount: number;
     email: string;
-    onSuccess?: (res: any) => void;
+    onSuccess?: (res: unknown) => void;
     onCancel?: () => void;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   class PaystackPop {
-    constructor(options?: any);
+    constructor(options?: Record<string, unknown>);
     newTransaction(options: PaystackInlineOptions): void;
   }
 

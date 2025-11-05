@@ -33,8 +33,11 @@ export default function ResetPasswordPage() {
       } else {
         toast.error(res.message || "Reset failed");
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Something went wrong");
+    } catch (err: unknown) {
+      let message = "Something went wrong";
+      if (err instanceof Error) message = err.message;
+      else message = String(err);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

@@ -18,8 +18,12 @@ export default function PaystackButton({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PK || "pk_test_YOUR_KEY",
       amount: amount * 100,
       email: "student@example.com", // replace with the real student email
-      onSuccess: (res: any) => {
-        toast.success("Payment success: " + res.reference);
+      onSuccess: (res: unknown) => {
+        let reference: string | undefined;
+        if (typeof res === "object" && res !== null && "reference" in res) {
+          reference = (res as { reference?: string }).reference;
+        }
+        toast.success("Payment success: " + (reference ?? ""));
         // You can also call your backend here to verify the payment
       },
       onCancel: () => {

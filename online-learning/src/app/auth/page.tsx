@@ -53,8 +53,11 @@ export default function AuthPage() {
           toast.error(res.message || "Registration failed");
         }
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Something went wrong");
+    } catch (error: unknown) {
+      let message = "Something went wrong";
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -78,8 +81,11 @@ export default function AuthPage() {
       } else {
         toast.error(res.message || "Could not send reset link");
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Something went wrong");
+    } catch (err: unknown) {
+      let message = "Something went wrong";
+      if (err instanceof Error) message = err.message;
+      else message = String(err);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -226,7 +232,7 @@ export default function AuthPage() {
                   setAuthenticated(true);
                   router.push(redirect);
                 } else {
-                  alert(res.message || "Login failed");
+                  toast.error(res.message || "Login failed");
                 }
               } else {
                 const res = await auth.register({
@@ -235,14 +241,19 @@ export default function AuthPage() {
                   password: values.password,
                 });
                 if (res.success) {
-                  alert("Account created successfully! Please sign in.");
+                  toast.success(
+                    "Account created successfully! Please sign in."
+                  );
                   setIsLogin(true);
                 } else {
-                  alert(res.message || "Registration failed");
+                  toast.error(res.message || "Registration failed");
                 }
               }
-            } catch (err: any) {
-              alert(err?.message || "Something went wrong");
+            } catch (err: unknown) {
+              let message = "Something went wrong";
+              if (err instanceof Error) message = err.message;
+              else message = String(err);
+              toast.error(message);
             } finally {
               setLoading(false);
             }
