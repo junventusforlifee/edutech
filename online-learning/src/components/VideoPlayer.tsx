@@ -5,7 +5,7 @@ import "video.js/dist/video-js.css";
 
 export default function VideoPlayer({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const playerRef = useRef<any | null>(null);
+  const playerRef = useRef<ReturnType<typeof videojs> | null>(null);
 
   useEffect(() => {
     if (!videoRef.current) return;

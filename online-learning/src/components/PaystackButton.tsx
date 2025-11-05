@@ -37,7 +37,7 @@ export default function PaystackButton({
       onClick={handlePay}
       className="bg-green-600 text-white px-3 py-2 rounded"
     >
-      Pay {amount} NGN
+      Pay {amount} NGN{description ? ` - ${description}` : ""}
     </button>
   );
 }
