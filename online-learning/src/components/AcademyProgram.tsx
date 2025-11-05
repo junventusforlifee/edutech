@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/authStore';
-import Image from 'next/image';
-import { BookOpen, GraduationCap, FileText, Award, School } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/authStore";
+import Image from "next/image";
+import { BookOpen, GraduationCap, FileText, Award, School } from "lucide-react";
 
 const academyPrograms = [
   {
     id: 1,
-    title: 'K12 Students',
-    description: 'Complete secondary school curriculum for K12 students',
+    title: "K12 Students",
+    description: "Complete secondary school curriculum for K12 students",
     icon: <School size={32} className="text-blue-600" />,
-    image: '/k12students.jpg',
+    image: "/k12students.jpg",
   },
   {
     id: 2,
-    title: 'WAEC & NECO',
-    description: 'Preparation for West African and Nigerian examinations',
+    title: "WAEC & NECO",
+    description: "Preparation for West African and Nigerian examinations",
     icon: <FileText size={32} className="text-blue-600" />,
-    image: '/k12student.jpg',
+    image: "/k12student.jpg",
   },
   {
     id: 3,
-    title: 'JAMB',
-    description: 'Comprehensive preparation for university entrance exams',
+    title: "JAMB",
+    description: "Comprehensive preparation for university entrance exams",
     icon: <BookOpen size={32} className="text-blue-600" />,
-    image: '/jambstudents.jpg',
+    image: "/jambstudents.jpg",
   },
   {
     id: 4,
-    title: 'JUPEB',
-    description: 'Direct entry program for university admission',
+    title: "JUPEB",
+    description: "Direct entry program for university admission",
     icon: <Award size={32} className="text-blue-600" />,
-    image: '/jupebstudents.jpg',
+    image: "/jupebstudents.jpg",
   },
   {
     id: 5,
-    title: '100 Level',
-    description: 'First year university courses and foundation programs',
+    title: "100 Level",
+    description: "First year university courses and foundation programs",
     icon: <GraduationCap size={32} className="text-blue-600" />,
-    image: '/yearone.jpg',
+    image: "/yearone.jpg",
   },
 ];
 
@@ -93,9 +93,10 @@ export default function AcademyProgram() {
 
   const handleCardClick = (programId: number) => {
     if (!isAuthenticated) {
-      router.push('/auth');
+      router.push("/auth");
     } else {
-      router.push('/dashboard');
+      // route to a program-specific dashboard page when authenticated
+      router.push(`/dashboard/academy/${programId}`);
     }
   };
 
@@ -105,7 +106,8 @@ export default function AcademyProgram() {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900">Academy Programs</h2>
           <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-            Our comprehensive academic programs designed to help students excel at every level of their education.
+            Our comprehensive academic programs designed to help students excel
+            at every level of their education.
           </p>
         </div>
 

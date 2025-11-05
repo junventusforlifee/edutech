@@ -27,7 +27,7 @@ export default function AdminGuard({
           router.replace("/auth");
           return;
         }
-      } catch (e) {
+      } catch (error) {
         router.replace("/auth");
       } finally {
         if (mounted) setLoading(false);

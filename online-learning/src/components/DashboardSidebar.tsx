@@ -52,7 +52,7 @@ export default function DashboardSidebar() {
     try {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-    } catch (e) {
+    } catch (error) {
       // ignore if localStorage not available
     }
 

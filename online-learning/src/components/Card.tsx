@@ -2,13 +2,12 @@ interface CardProps {
   title: string;
   description: string;
   icon: React.ReactNode;
-  image: string;
   onClick: () => void;
 }
 
-export default function Card({ title, description, icon,image, onClick }: CardProps) {
+export default function Card({ title, description, icon, onClick }: CardProps) {
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border border-gray-100"
       onClick={onClick}
     >

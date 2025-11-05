@@ -1,8 +1,6 @@
-// @ts-ignore - allow importing global CSS without module declarations
 import "./globals.css";
 import React from "react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 

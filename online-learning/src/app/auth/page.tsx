@@ -21,48 +21,6 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isLogin) {
-        const res = await (
-          await import("@/lib/auth")
-        ).login({ email: form.email, password: form.password });
-        if (res.success) {
-          // on success, mark authenticated (backend sets httpOnly cookie)
-          setUser({ name: form.name, email: form.email });
-          setAuthenticated(true);
-          router.push(redirect);
-        } else {
-          toast.error(res.message || "Login failed");
-        }
-      } else {
-        const res = await (
-          await import("@/lib/auth")
-        ).register({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-        });
-        if (res.success) {
-          toast.success("Account created successfully! Please sign in.");
-          setIsLogin(true);
-        } else {
-          toast.error(res.message || "Registration failed");
-        }
-      }
-    } catch (error: unknown) {
-      let message = "Something went wrong";
-      if (error instanceof Error) message = error.message;
-      else message = String(error);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleGoogle() {
     setUser({ name: "Google User", email: "google@example.com" });
     setAuthenticated(true);

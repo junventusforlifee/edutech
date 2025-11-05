@@ -1,6 +1,6 @@
 "use client";
 
-import { Trophy, Users, Bot, RefreshCw, PlayCircle, Gift } from "lucide-react";
+import { Trophy, Users, Bot, Gift } from "lucide-react";
 
 const features = [
   {
@@ -34,10 +34,11 @@ export default function FeatureCards() {
     <section className="bg-white py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-        Innovative solutions for total learning engagement
+          Innovative solutions for total learning engagement
         </h2>
         <p className="mt-4 text-lg text-gray-600">
-          Creative. Social. Personalized. Habit-forming — learning that actually sticks.
+          Creative. Social. Personalized. Habit-forming — learning that actually
+          sticks.
         </p>
       </div>
 

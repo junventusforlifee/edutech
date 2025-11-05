@@ -16,17 +16,32 @@ export default function PaymentPage({ params }: Props) {
     {
       title: `${humanLabel} — Basic`,
       price: "₦2,000",
-      features: ["Access To Course Materials","Access To Recorded Classes","Community Support"],
+      features: [
+        "Access To Course Materials",
+        "Access To Recorded Classes",
+        "Community Support",
+      ],
     },
     {
       title: `${humanLabel} — Pro`,
       price: "₦5,000",
-      features: ["Everything In Basic", "Recorded Classes","Access To Gamified Lectures","Quizzes & Answers"],
+      features: [
+        "Everything In Basic",
+        "Recorded Classes",
+        "Access To Gamified Lectures",
+        "Quizzes & Answers",
+      ],
     },
     {
       title: `${humanLabel} — Premium`,
       price: "₦15,000",
-      features: ["1:1 Mentoring With Human Teacher + AI Co-Teacher", "Live Classes + AI Co-Teachers","Access To Gamified Lectures","Summarized Video Classes To Student's Learning Curve By AI","All Materials"],
+      features: [
+        "1:1 Mentoring With Human Teacher + AI Co-Teacher",
+        "Live Classes + AI Co-Teachers",
+        "Access To Gamified Lectures",
+        "Summarized Video Classes To Student's Learning Curve By AI",
+        "All Materials",
+      ],
     },
   ];
 
@@ -52,10 +67,10 @@ export default function PaymentPage({ params }: Props) {
       </div>
 
       <div className="mt-6 text-sm text-gray-500">
-        <strong>Note:</strong> The "Pay" button is a placeholder. To accept
-        payments you must create a backend endpoint to create a checkout/session
-        with your provider and redirect the user to the provider's checkout
-        page. Recommended env vars:{" "}
+        <strong>Note:</strong> The &quot;Pay&quot; button is a placeholder. To
+        accept payments you must create a backend endpoint to create a
+        checkout/session with your provider and redirect the user to the
+        provider&apos;s checkout page. Recommended env vars:{" "}
         <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code>,{" "}
         <code>STRIPE_SECRET_KEY</code> (server).
       </div>

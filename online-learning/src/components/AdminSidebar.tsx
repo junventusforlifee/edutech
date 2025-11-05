@@ -38,7 +38,7 @@ export default function AdminSidebar() {
     try {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-    } catch (e) {
+    } catch (error) {
       // ignore
     }
 
