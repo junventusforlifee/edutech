@@ -53,7 +53,7 @@ export default function DashboardSidebar() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     } catch (error) {
-      // ignore if localStorage not available
+      console.warn("Dashboard logout: unable to clear localStorage", error);
     }
 
     router.push("/");

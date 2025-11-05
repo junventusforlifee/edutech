@@ -28,6 +28,7 @@ export default function AdminGuard({
           return;
         }
       } catch (error) {
+        console.error("AdminGuard: failed to verify admin status", error);
         router.replace("/auth");
       } finally {
         if (mounted) setLoading(false);

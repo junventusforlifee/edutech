@@ -39,7 +39,7 @@ export default function AdminSidebar() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     } catch (error) {
-      // ignore
+      console.warn("Admin logout: unable to clear localStorage", error);
     }
 
     // Redirect to homepage

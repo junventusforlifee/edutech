@@ -8,7 +8,7 @@ type Props = {
   };
 };
 
-export default function PaymentPage({ params }: Props) {
+export default async function PaymentPage({ params }: Props) {
   const { plan } = params;
   const humanLabel = plan.replace(/-/g, " ");
 
