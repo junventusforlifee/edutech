@@ -81,7 +81,7 @@ export default function Hero() {
       {/* Cards Carousel Section */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative h-auto min-h-[500px] sm:min-h-[550px] md:min-h-[450px] w-full max-w-5xl mx-auto mb-8">
+          <div className="relative h-auto min-h-[500px] sm:min-h-[550px] md:min-h-[450px] w-full max-w-5xl mx-auto mb-8 overflow-hidden">
             {heroCards.map((card, index) => (
               <div
                 key={card.id}

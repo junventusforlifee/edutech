@@ -36,7 +36,7 @@ export default function Footer() {
                 href="mailto:info@neotisa.com"
                 className="hover:text-white transition-colors"
               >
-                info@neotisa.com
+                contact@neotisa.com
               </a>
             </div>
             {/* First Phone */}
@@ -78,7 +78,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
             <div className="flex space-x-4">
               <a 
-                href="https://youtube.com/your-channel" 
+                href="https://youtube.com/@neotisaedutech" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-white transition-colors"
@@ -96,7 +96,7 @@ export default function Footer() {
                 <Twitter size={24} />
               </a>
               <a 
-                href="https://facebook.com/your-page" 
+                href="https://facebook.com/theneotisa" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-white transition-colors"
@@ -114,7 +114,7 @@ export default function Footer() {
                 <Instagram size={24} />
               </a>
               <a 
-                href="https://linkedin.com/your-company" 
+                href="https://linkedin.com/in/neotisaedtech" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-white transition-colors"

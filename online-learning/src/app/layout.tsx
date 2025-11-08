@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 export const metadata = {
-  title: "Elearning Platform",
+  title: "Human-led.AI-powered Learning Platform",
   description: "Learn with the best online courses and live classes",
 };
 
