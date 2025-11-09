@@ -13,11 +13,31 @@ connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
-// allow requests from the frontend and allow cookies
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 
-console.log("CORS configured to accept requests from:", FRONTEND_URL);
+// allow requests from the frontend and allow cookies
+const defaultOrigins = [
+  "http://localhost:3000",
+  "https://neotisa.com",
+  "https://www.neotisa.com",
+];
+const configuredOrigin = process.env.FRONTEND_URL;
+
+const allowedOrigins = configuredOrigin
+  ? Array.from(new Set([...defaultOrigins, configuredOrigin]))
+  : defaultOrigins;
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow non-browser tools
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+  })
+);
+
+console.log("CORS configured to accept requests from:", allowedOrigins);
 
 // API endpoint
 app.get("/", (req, res) => res.send("api is working"));
