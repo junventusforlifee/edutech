@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
+import { OAuth2Client } from "google-auth-library";
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -285,6 +286,118 @@ If you didn't request this, ignore this email. The link expires in 1 hour.`,
     });
   } catch (error) {
     return res.json({ success: false, message: error.message });
+  }
+};
+
+export const googleAuth = async (req, res) => {
+  const { accessToken } = req.body;
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    return res.status(500).json({
+      success: false,
+      message: "Google sign-in is not configured on the server",
+    });
+  }
+
+  if (!accessToken) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing Google access token" });
+  }
+
+  try {
+    const oauthClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET
+    );
+
+    let tokenInfo;
+    try {
+      tokenInfo = await oauthClient.getTokenInfo(accessToken);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid Google token" });
+    }
+
+    if (tokenInfo.aud !== process.env.GOOGLE_CLIENT_ID) {
+      return res.status(401).json({
+        success: false,
+        message: "Google token audience mismatch",
+      });
+    }
+
+    oauthClient.setCredentials({ access_token: accessToken });
+    const { data: profile } = await oauthClient.request({
+      url: "https://www.googleapis.com/oauth2/v3/userinfo",
+    });
+
+    const email = profile?.email ? String(profile.email).toLowerCase() : "";
+    const nameFromProfile =
+      profile?.name ||
+      [profile?.given_name, profile?.family_name].filter(Boolean).join(" ");
+    const name = nameFromProfile?.trim() || "Google User";
+    const emailVerified = Boolean(profile?.email_verified);
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Google account has no email" });
+    }
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(32).toString("hex");
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      user = await userModel.create({
+        name,
+        email,
+        password: hashedPassword,
+        isAccountVerified: emailVerified,
+      });
+    } else {
+      let shouldSave = false;
+      if (!user.name && name) {
+        user.name = name;
+        shouldSave = true;
+      }
+      if (!user.isAccountVerified && emailVerified) {
+        user.isAccountVerified = true;
+        shouldSave = true;
+      }
+      if (shouldSave) {
+        await user.save();
+      }
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isVerified: user.isAccountVerified,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("googleAuth error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Google sign-in failed" });
   }
 };
 
