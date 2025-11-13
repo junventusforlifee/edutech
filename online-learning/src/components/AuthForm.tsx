@@ -11,6 +11,7 @@ export default function AuthForm({
   onSubmit,
   onForgot,
   onGoogle,
+  googleDisabled = false,
 }: {
   mode?: "login" | "register";
   loading?: boolean;
@@ -18,6 +19,7 @@ export default function AuthForm({
   onSubmit?: (values: Values) => void | Promise<void>;
   onForgot?: () => void;
   onGoogle?: () => void;
+  googleDisabled?: boolean;
 }) {
   const [values, setValues] = useState<Values>(initial);
   const [showPassword, setShowPassword] = useState(false); // 👈 New state for toggling password
@@ -162,7 +164,8 @@ export default function AuthForm({
       <button
         type="button"
         onClick={onGoogle}
-        className="w-full flex items-center justify-center gap-3 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-all"
+        disabled={googleDisabled}
+        className="w-full flex items-center justify-center gap-3 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path

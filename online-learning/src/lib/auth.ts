@@ -150,3 +150,21 @@ export async function verifyEmail(payload: { userId: string; otp: string }) {
     return { success: false, message };
   }
 }
+
+export async function loginWithGoogle(accessToken: string) {
+  try {
+    const { data } = await api.post("/auth/google", { accessToken });
+    return data;
+  } catch (err: unknown) {
+    let message = "Something went wrong";
+    if (isAxiosError(err)) {
+      message = err.response?.data?.message ?? err.message ?? message;
+    } else if (err instanceof Error) {
+      message = err.message;
+    } else {
+      message = String(err);
+    }
+
+    return { success: false, message };
+  }
+}

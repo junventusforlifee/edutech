@@ -1,8 +1,10 @@
 "use client";
 import React, { Suspense, useState } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import { useGoogleConfig } from "@/providers/GoogleAuthProvider";
 import AuthForm from "@/components/AuthForm";
 
 function AuthPageContent() {
@@ -10,6 +12,7 @@ function AuthPageContent() {
   const params = useSearchParams();
   const redirect = params?.get("redirect") || "/dashboard";
   const { setUser, setAuthenticated } = useAuthStore();
+  const { isConfigured: googleConfigured } = useGoogleConfig();
 
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState<{
@@ -21,11 +24,50 @@ function AuthPageContent() {
   const [loading, setLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
 
-  async function handleGoogle() {
-    setUser({ name: "Google User", email: "google@example.com" });
-    setAuthenticated(true);
-    router.push(redirect);
-  }
+  const startGoogleLogin = useGoogleLogin({
+    flow: "implicit",
+    scope: "openid email profile",
+    onSuccess: async (tokenResponse) => {
+      if (!tokenResponse.access_token) {
+        toast.error("Google sign-in failed: missing token");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const auth = await import("@/lib/auth");
+        const res = await auth.loginWithGoogle(tokenResponse.access_token);
+        if (res.success) {
+          if (res.user) setUser(res.user);
+          else setUser({ name: "Google User", email: "" });
+          setAuthenticated(true);
+          toast.success("Signed in with Google");
+          router.push(redirect);
+        } else {
+          toast.error(res.message || "Google sign-in failed");
+        }
+      } catch (err: unknown) {
+        let message = "Something went wrong";
+        if (err instanceof Error) message = err.message;
+        else message = String(err);
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (errorResponse) => {
+      console.error("Google sign-in error", errorResponse);
+      toast.error("Google sign-in failed");
+    },
+  });
+
+  const handleGoogle = () => {
+    if (!googleConfigured) {
+      toast.error("Google sign-in is not configured.");
+      return;
+    }
+    startGoogleLogin();
+  };
 
   async function handleForgotPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -218,6 +260,7 @@ function AuthPageContent() {
           }}
           onForgot={() => setForgotPassword(true)}
           onGoogle={handleGoogle}
+          googleDisabled={!googleConfigured}
         />
 
         {/* Terms */}
