@@ -477,7 +477,7 @@ export const googleAuthCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.redirect("https://neotisa.com/dashboard"); // Redirect to your frontend dashboard
+    return res.redirect("https://neotisa.com/student-dashboard"); // Redirect to your frontend dashboard
   } catch (error) {
     console.error("googleAuthCallback error", error);
     return res
