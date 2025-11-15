@@ -407,7 +407,8 @@ export const googleAuthCallback = async (req, res) => {
   if (!code) {
     return res.status(400).json({
       success: false,
-      message: "Missing authorization code",
+      message:
+        "Authorization code is missing. This endpoint is meant to handle callbacks from Google after a successful login. Please initiate the login process from the frontend.",
     });
   }
 
