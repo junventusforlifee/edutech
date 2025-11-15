@@ -401,6 +401,90 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+export const googleAuthCallback = async (req, res) => {
+  const { code } = req.query;
+
+  if (!code) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing authorization code",
+    });
+  }
+
+  try {
+    const oauthClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      "https://neotisa.com/auth/google/callback" // Replace with your redirect URI
+    );
+
+    const { tokens } = await oauthClient.getToken(code);
+    oauthClient.setCredentials(tokens);
+
+    const { data: profile } = await oauthClient.request({
+      url: "https://www.googleapis.com/oauth2/v3/userinfo",
+    });
+
+    const email = profile?.email ? String(profile.email).toLowerCase() : "";
+    const nameFromProfile =
+      profile?.name ||
+      [profile?.given_name, profile?.family_name].filter(Boolean).join(" ");
+    const name = nameFromProfile?.trim() || "Google User";
+    const emailVerified = Boolean(profile?.email_verified);
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Google account has no email" });
+    }
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(32).toString("hex");
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      user = await userModel.create({
+        name,
+        email,
+        password: hashedPassword,
+        isAccountVerified: emailVerified,
+      });
+    } else {
+      let shouldSave = false;
+      if (!user.name && name) {
+        user.name = name;
+        shouldSave = true;
+      }
+      if (!user.isAccountVerified && emailVerified) {
+        user.isAccountVerified = true;
+        shouldSave = true;
+      }
+      if (shouldSave) {
+        await user.save();
+      }
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.redirect("https://neotisa.com/dashboard"); // Redirect to your frontend dashboard
+  } catch (error) {
+    console.error("googleAuthCallback error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Google sign-in failed" });
+  }
+};
+
 // Reset user password
 
 export const resetPassword = async (req, res) => {
