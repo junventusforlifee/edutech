@@ -26,9 +26,5 @@ authRouter.post("/me", userAuth, me);
 authRouter.post("/send-reset-link", sendResetLink);
 authRouter.post("/reset-password", resetPassword);
 authRouter.post("/google", googleAuth);
-authRouter.get("/google", (req, res) => {
-  res.status(200).send("Google OAuth GET endpoint is working.");
-});
-authRouter.get("/google/callback", googleAuthCallback);
 
 export default authRouter;
