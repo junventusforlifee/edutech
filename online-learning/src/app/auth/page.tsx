@@ -42,7 +42,7 @@ function AuthPageContent() {
           else setUser({ name: "Google User", email: "" });
           setAuthenticated(true);
           toast.success("Signed in with Google");
-          router.push(redirect);
+          router.push("/dashboard");
         } else {
           toast.error(res.message || "Google sign-in failed");
         }
