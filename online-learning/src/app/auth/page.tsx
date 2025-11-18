@@ -42,7 +42,8 @@ function AuthPageContent() {
           else setUser({ name: "Google User", email: "" });
           setAuthenticated(true);
           toast.success("Signed in with Google");
-          router.push("/dashboard");
+          const destination = res.user?.role === "admin" ? "/admin" : redirect;
+          router.push(destination);
         } else {
           toast.error(res.message || "Google sign-in failed");
         }
@@ -230,7 +231,9 @@ function AuthPageContent() {
                   if (res.user) setUser(res.user);
                   else setUser({ name: values.name, email: values.email });
                   setAuthenticated(true);
-                  router.push(redirect);
+                  const destination =
+                    res.user?.role === "admin" ? "/admin" : redirect;
+                  router.push(destination);
                 } else {
                   toast.error(res.message || "Login failed");
                 }

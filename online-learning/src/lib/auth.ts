@@ -115,9 +115,9 @@ export async function resetPassword(payload: {
   }
 }
 
-export async function sendVerifyOtp(userId: string) {
+export async function sendVerifyEmail(userId: string) {
   try {
-    const { data } = await api.post("/auth/send-verify-otp", { userId });
+    const { data } = await api.post("/auth/send-verify-email", { userId });
     return data;
   } catch (err: unknown) {
     let message = "Something went wrong";
@@ -133,7 +133,7 @@ export async function sendVerifyOtp(userId: string) {
   }
 }
 
-export async function verifyEmail(payload: { userId: string; otp: string }) {
+export async function verifyEmail(payload: { token: string; email: string }) {
   try {
     const { data } = await api.post("/auth/verify-account", payload);
     return data;
