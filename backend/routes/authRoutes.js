@@ -6,7 +6,7 @@ import {
   register,
   resetPassword,
   sendResetLink,
-  sendVerifyOtp,
+  sendVerifyEmail,
   verifyEmail,
   me,
   googleAuth,
@@ -19,8 +19,8 @@ const authRouter = express.Router();
 authRouter.post("/register", register);
 authRouter.post("/login", login);
 authRouter.post("/logout", logout);
-authRouter.post("/send-verify-otp", userAuth, sendVerifyOtp);
-authRouter.post("/verify-account", userAuth, verifyEmail);
+authRouter.post("/send-verify-email", userAuth, sendVerifyEmail);
+authRouter.post("/verify-account", verifyEmail);
 authRouter.post("/is-auth", userAuth, isAuthenticated);
 authRouter.post("/me", userAuth, me);
 authRouter.post("/send-reset-link", sendResetLink);

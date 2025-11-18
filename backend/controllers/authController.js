@@ -5,6 +5,25 @@ import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
 import { OAuth2Client } from "google-auth-library";
 
+// Helper to set auth cookie with correct cross-site settings
+function isProdLike() {
+  const frontendUrl = process.env.FRONTEND_URL || "";
+  return (
+    process.env.NODE_ENV === "production" ||
+    (typeof frontendUrl === "string" && frontendUrl.startsWith("https://"))
+  );
+}
+
+function setAuthCookie(res, token) {
+  const prod = isProdLike();
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: prod,
+    sameSite: prod ? "none" : "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -28,26 +47,36 @@ export const register = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(res, token);
 
-    // Sending welcome email
+    // Sending welcome email with verification link
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    user.verifyToken = verifyToken;
+    user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(
+      email
+    )}`;
+
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: email,
-      subject: "Welcome to Neotisa Learning Platform",
-      text: `Welcome to Neotisa online-learning platform. Your account has been created with email id: ${email}`,
+      subject: "Welcome to Neotisa Learning Platform - Verify Your Email",
+      text: `Welcome to Neotisa online-learning platform. Your account has been created with email id: ${email}
+
+Please verify your email by clicking the link below:
+${verifyUrl}
+
+This link expires in 24 hours.`,
     };
 
     try {
       await transporter.sendMail(mailOptions);
     } catch (mailErr) {
       console.error("sendMail error (register):", mailErr, { mailOptions });
-      // don't block account creation because of mail issues; inform caller
+      // don't block account creation because of mail issues
     }
 
     return res.json({
@@ -98,12 +127,7 @@ export const login = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(res, token);
 
     return res.json({
       success: true,
@@ -122,10 +146,12 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    // clear cookie using same options so browser removes it
+    const prod = isProdLike();
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: prod,
+      sameSite: prod ? "none" : "strict",
     });
 
     return res.json({ success: true, message: "Logged Out" });
@@ -134,7 +160,7 @@ export const logout = async (req, res) => {
   }
 };
 
-export const sendVerifyOtp = async (req, res) => {
+export const sendVerifyEmail = async (req, res) => {
   try {
     const { userId } = req.body;
 
@@ -152,56 +178,77 @@ export const sendVerifyOtp = async (req, res) => {
       return res.json({ success: false, message: "Account already verified" });
     }
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-
-    user.verifyOtp = otp;
-    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    user.verifyToken = verifyToken;
+    user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(
+      user.email
+    )}`;
 
     const mailOption = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
-      subject: "Account Verification OTP",
-      text: `Your OTP is ${otp}. Verify your account using this OTP.`,
+      subject: "Verify Your Email - Neotisa",
+      text: `Please verify your email by clicking the link below:
+${verifyUrl}
+
+This link expires in 24 hours.`,
     };
 
     try {
       await transporter.sendMail(mailOption);
+      res.json({ success: true, message: "Verification link sent to email" });
     } catch (mailErr) {
       console.error("sendMail error (verify):", mailErr, { mailOption });
+      res.json({
+        success: false,
+        message: "Failed to send verification email. Please try again later.",
+      });
     }
-    res.json({ success: true, message: "Verification OTP sent to email" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
 };
 
 export const verifyEmail = async (req, res) => {
-  const { userId, otp } = req.body;
+  const { token, email } = req.body;
 
-  if (!userId || !otp) {
-    return res.json({ success: false, message: "Missing Details" });
+  if (!token || !email) {
+    return res.json({ success: false, message: "Missing token or email" });
   }
 
   try {
-    const user = await userModel.findById(userId);
+    const user = await userModel.findOne({ email });
 
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
 
-    if (user.verifyOtp === "" || user.verifyOtp !== otp) {
-      return res.json({ success: false, message: "Invalid OTP" });
+    if (user.isAccountVerified) {
+      return res.json({ success: false, message: "Account already verified" });
     }
 
-    if (user.verifyOtpExpireAt < Date.now()) {
-      return res.json({ success: false, message: "OTP expired" });
+    if (user.verifyToken === "" || user.verifyToken !== token) {
+      return res.json({
+        success: false,
+        message: "Invalid verification token",
+      });
+    }
+
+    if (user.verifyTokenExpireAt < Date.now()) {
+      return res.json({
+        success: false,
+        message: "Verification token expired",
+      });
     }
 
     user.isAccountVerified = true;
-    user.verifyOtp = "";
-    user.verifyOtpExpireAt = 0;
+    user.verifyToken = "";
+    user.verifyTokenExpireAt = 0;
 
     await user.save();
     return res.json({ success: true, message: "Email verified successfully" });
@@ -275,15 +322,18 @@ If you didn't request this, ignore this email. The link expires in 1 hour.`,
 
     try {
       await transporter.sendMail(mailOption);
+      return res.json({
+        success: true,
+        message: "Reset link sent to your email",
+      });
     } catch (mailErr) {
       console.error("sendMail error (reset link):", mailErr, { mailOption });
-      // Continue: don't block the response for email issues
+      return res.json({
+        success: false,
+        message:
+          "Failed to send reset email. Please try again later or contact support.",
+      });
     }
-
-    return res.json({
-      success: true,
-      message: "Reset link sent to your email",
-    });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
@@ -376,12 +426,7 @@ export const googleAuth = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(res, token);
 
     return res.json({
       success: true,
@@ -470,12 +515,7 @@ export const googleAuthCallback = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(res, token);
 
     return res.redirect("https://neotisa.com/student-dashboard"); // Redirect to your frontend dashboard
   } catch (error) {
