@@ -20,11 +20,16 @@ const defaultOrigins = [
   "https://neotisa.com",
   "https://www.neotisa.com",
 ];
+
+// Add Vercel preview/production URLs if provided
+const vercelUrl = process.env.VERCEL_URL;
 const configuredOrigin = process.env.FRONTEND_URL;
 
-const allowedOrigins = configuredOrigin
-  ? Array.from(new Set([...defaultOrigins, configuredOrigin]))
-  : defaultOrigins;
+const allowedOrigins = [
+  ...defaultOrigins,
+  ...(configuredOrigin ? [configuredOrigin] : []),
+  ...(vercelUrl ? [`https://${vercelUrl}`] : []),
+].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
 
 app.use(
   cors({

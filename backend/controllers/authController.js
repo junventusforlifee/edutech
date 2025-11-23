@@ -275,10 +275,13 @@ export const isAuthenticated = async (req, res) => {
 export const me = async (req, res) => {
   try {
     const userId = req.body.userId;
+    console.log("[DEBUG /auth/me] userId from middleware:", userId);
+    console.log("[DEBUG /auth/me] cookies received:", req.cookies);
     if (!userId)
       return res.json({ success: false, message: "Not authenticated" });
     const user = await userModel.findById(userId).select("-password");
     if (!user) return res.json({ success: false, message: "User not found" });
+    console.log("[DEBUG /auth/me] user found, role:", user.role);
     return res.json({ success: true, user });
   } catch (error) {
     return res.json({ success: false, message: error.message });
