@@ -16,17 +16,22 @@ export default function AdminGuard({
     async function check() {
       try {
         const res = await getCurrentAuth();
+        console.log("[AdminGuard] getCurrentAuth response:", res);
         if (!mounted) return;
         if (!res || !res.success) {
+          console.log("[AdminGuard] Not authenticated, redirecting to /auth");
           router.replace("/auth");
           return;
         }
 
         // if user exists but is not admin, redirect
+        console.log("[AdminGuard] User role:", res.user?.role);
         if (res.user && res.user.role !== "admin") {
+          console.log("[AdminGuard] User is not admin, redirecting to /auth");
           router.replace("/auth");
           return;
         }
+        console.log("[AdminGuard] Admin verified, allowing access");
       } catch (error) {
         console.error("AdminGuard: failed to verify admin status", error);
         router.replace("/auth");
