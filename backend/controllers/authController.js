@@ -25,14 +25,39 @@ function setAuthCookie(res, token) {
 }
 
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, fullName } = req.body;
 
-  if (!name || !email || !password) {
+  // If fullName is provided (student registration), auto-generate email and student name
+  if (fullName) {
+    const nameParts = fullName.trim().split(/\s+/);
+
+    // Generate student name from first letters (e.g., "John Doe" -> "JD")
+    const studentName = nameParts
+      .slice(0, 2) // Take first two names
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("");
+
+    // Generate email from full name (e.g., "John Doe" -> "johndoe@example.com")
+    const studentEmail =
+      nameParts
+        .join("")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "") + "@example.com";
+
+    // Use generated values
+    req.body.name = studentName;
+    req.body.email = studentEmail;
+  }
+
+  const finalName = req.body.name || name;
+  const finalEmail = req.body.email || email;
+
+  if (!finalName || !finalEmail || !password) {
     return res.json({ success: false, message: "Missing Details" });
   }
 
   try {
-    const existingUser = await userModel.findOne({ email });
+    const existingUser = await userModel.findOne({ email: finalEmail });
 
     if (existingUser) {
       return res.json({ success: false, message: "User already exists" });
@@ -40,7 +65,11 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new userModel({ name, email, password: hashedPassword });
+    const user = new userModel({
+      name: finalName,
+      email: finalEmail,
+      password: hashedPassword,
+    });
     await user.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -57,14 +86,14 @@ export const register = async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(
-      email
+      user.email
     )}`;
 
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
-      to: email,
+      to: user.email,
       subject: "Welcome to Neotisa Learning Platform - Verify Your Email",
-      text: `Welcome to Neotisa online-learning platform. Your account has been created with email id: ${email}
+      text: `Welcome to Neotisa online-learning platform. Your account has been created with email id: ${user.email}
 
 Please verify your email by clicking the link below:
 ${verifyUrl}
