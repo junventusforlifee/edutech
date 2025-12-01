@@ -2,12 +2,24 @@
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react"; // 👈 Import eye icons
 
-type Values = { name: string; email: string; phone: string; password: string };
+type Values = {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  fullName?: string;
+};
 
 export default function AuthForm({
   mode = "login",
   loading = false,
-  initial = { name: "", email: "", phone: "", password: "" } as Values,
+  initial = {
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    fullName: "",
+  } as Values,
   onSubmit,
   onForgot,
   onGoogle,
@@ -23,6 +35,10 @@ export default function AuthForm({
 }) {
   const [values, setValues] = useState<Values>(initial);
   const [showPassword, setShowPassword] = useState(false); // 👈 New state for toggling password
+  const [generatedInfo, setGeneratedInfo] = useState<{
+    studentName: string;
+    studentEmail: string;
+  } | null>(null);
 
   useEffect(() => {
     // reset fields when mode switches
@@ -31,7 +47,30 @@ export default function AuthForm({
 
   const handleChange =
     (k: keyof Values) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValues((v) => ({ ...v, [k]: e.target.value }));
+      const newValue = e.target.value;
+      setValues((v) => ({ ...v, [k]: newValue }));
+
+      // Auto-generate student info when fullName changes
+      if (k === "fullName" && newValue && mode === "register") {
+        const nameParts = newValue.trim().split(/\s+/);
+
+        // Generate student name from first letters (e.g., "John Doe" -> "JD")
+        const studentName = nameParts
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("");
+
+        // Generate email from full name (e.g., "John Doe" -> "johndoe@example.com")
+        const studentEmail =
+          nameParts
+            .join("")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "") + "@example.com";
+
+        setGeneratedInfo({ studentName, studentEmail });
+      } else if (k === "fullName" && !newValue) {
+        setGeneratedInfo(null);
+      }
     };
 
   const submit = async (e: React.FormEvent) => {
@@ -42,42 +81,56 @@ export default function AuthForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       {mode === "register" && (
+        <>
+          <div>
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Full Name (First & Last Name)
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="e.g., John Doe"
+              value={values.fullName}
+              onChange={handleChange("fullName")}
+            />
+            {generatedInfo && (
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  <strong>Student Name:</strong> {generatedInfo.studentName}
+                </p>
+                <p className="text-sm text-blue-700">
+                  <strong>Student Email:</strong> {generatedInfo.studentEmail}
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {mode === "login" && (
         <div>
           <label
-            htmlFor="name"
+            htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Full Name
+            Email Address
           </label>
           <input
-            id="name"
-            type="text"
+            id="email"
+            type="email"
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            placeholder="Enter your full name"
-            value={values.name}
-            onChange={handleChange("name")}
+            placeholder="Enter your email"
+            value={values.email}
+            onChange={handleChange("email")}
           />
         </div>
       )}
-
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Email Address
-        </label>
-        <input
-          id="email"
-          type="email"
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          placeholder="Enter your email"
-          value={values.email}
-          onChange={handleChange("email")}
-        />
-      </div>
 
       {mode === "register" && (
         <div>

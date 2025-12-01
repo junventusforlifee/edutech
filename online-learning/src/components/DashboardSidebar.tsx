@@ -21,6 +21,7 @@ import {
 
 export default function DashboardSidebar() {
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const items = [
     { label: "K12", icon: <BookOpen size={18} /> },
@@ -64,11 +65,13 @@ export default function DashboardSidebar() {
       {/* Student Info */}
       <div className="flex items-center gap-3 mb-6">
         <div className="h-12 w-12 rounded-full bg-blue-400 flex items-center justify-center text-lg font-bold">
-          S
+          {user?.name ? user.name.charAt(0).toUpperCase() : "S"}
         </div>
         <div>
-          <div className="font-semibold">Student Name</div>
-          <div className="text-sm text-blue-100">student@example.com</div>
+          <div className="font-semibold">{user?.name || "Student Name"}</div>
+          <div className="text-sm text-blue-100">
+            {user?.email || "student@example.com"}
+          </div>
         </div>
       </div>
 

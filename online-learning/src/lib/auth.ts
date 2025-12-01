@@ -1,7 +1,12 @@
 import api from "./api";
 import { isAxiosError } from "axios";
 
-type RegisterPayload = { name: string; email: string; password: string };
+type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  fullName?: string;
+};
 type LoginPayload = { email: string; password: string };
 
 export async function register(payload: RegisterPayload) {

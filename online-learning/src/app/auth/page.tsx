@@ -20,7 +20,8 @@ function AuthPageContent() {
     email: string;
     phone: string;
     password: string;
-  }>({ name: "", email: "", phone: "", password: "" });
+    fullName?: string;
+  }>({ name: "", email: "", phone: "", password: "", fullName: "" });
   const [loading, setLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
 
@@ -242,6 +243,7 @@ function AuthPageContent() {
                   name: values.name,
                   email: values.email,
                   password: values.password,
+                  fullName: values.fullName,
                 });
                 if (res.success) {
                   toast.success(
