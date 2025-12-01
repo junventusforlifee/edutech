@@ -8,6 +8,7 @@ import { LayoutDashboard, Video, Calendar, LogOut } from "lucide-react";
 
 export default function AdminSidebar() {
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const items = [
     { href: "/admin", label: "Overview", icon: <LayoutDashboard size={18} /> },
@@ -42,15 +43,25 @@ export default function AdminSidebar() {
       console.warn("Admin logout: unable to clear localStorage", error);
     }
 
-    // Redirect to homepage
-    router.push("/");
+    // Use replace instead of push to prevent back button from returning to admin dashboard
+    router.replace("/");
   };
 
   return (
     <div className="bg-blue-600 text-white rounded-2xl shadow-lg p-5 min-h-screen w-64">
-      <h3 className="font-semibold text-lg mb-6 text-white tracking-wide">
-        Admin Dashboard
-      </h3>
+      {/* Admin Info */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="h-12 w-12 rounded-full bg-blue-400 flex items-center justify-center text-lg font-bold">
+          {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
+        </div>
+        <div>
+          <div className="font-semibold">{user?.name || "Admin"}</div>
+          <div className="text-sm text-blue-100">
+            {user?.email || "admin@example.com"}
+          </div>
+          <div className="text-xs text-blue-200 mt-1">Administrator</div>
+        </div>
+      </div>
 
       <nav className="flex flex-col gap-2">
         {items.map((i) => (

@@ -2,67 +2,85 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentAuth } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function AdminGuard({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  console.log("[AdminGuard] Component mounted!");
   const router = useRouter();
+  const { setUser, setAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    console.log("[AdminGuard] useEffect running...");
     let mounted = true;
-    async function check() {
+
+    async function verifyAdmin() {
       try {
-        console.log("[AdminGuard] About to call getCurrentAuth()...");
         const res = await getCurrentAuth();
-        console.log(
-          "[AdminGuard] getCurrentAuth response:",
-          JSON.stringify(res, null, 2)
-        );
+
         if (!mounted) return;
+
+        // Check if authenticated
         if (!res || !res.success) {
           console.log("[AdminGuard] Not authenticated, redirecting to /auth");
-          router.replace("/auth");
+          setAuthenticated(false);
+          setUser(null);
+          router.replace("/auth?redirect=/admin");
           return;
         }
 
-        // if user exists but is not admin, redirect
-        console.log("[AdminGuard] User role:", res.user?.role);
+        // Check if user has admin role
         if (res.user && res.user.role !== "admin") {
-          console.log("[AdminGuard] User is not admin, redirecting to /auth");
-          router.replace("/auth");
+          console.log(
+            "[AdminGuard] User is not admin, redirecting to /dashboard"
+          );
+          router.replace("/dashboard");
           return;
         }
-        console.log("[AdminGuard] ✓ Admin verified, allowing access");
+
+        // User is admin
+        setUser(res.user);
+        setAuthenticated(true);
+        setIsAdmin(true);
       } catch (error) {
-        console.error("[AdminGuard] Error caught:", error);
-        if (error instanceof Error) {
-          console.error("[AdminGuard] Error message:", error.message);
-          console.error("[AdminGuard] Error stack:", error.stack);
-        }
-        router.replace("/auth");
+        console.error("[AdminGuard] Error verifying admin:", error);
+        if (!mounted) return;
+        setAuthenticated(false);
+        setUser(null);
+        router.replace("/auth?redirect=/admin");
       } finally {
         if (mounted) {
-          console.log("[AdminGuard] Setting loading to false");
           setLoading(false);
         }
       }
     }
-    check();
+
+    verifyAdmin();
+
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [router, setUser, setAuthenticated]);
 
+  // Show loading state
   if (loading) {
-    console.log("[AdminGuard] Rendering loading state...");
-    return <div className="p-8">Checking permissions...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying admin access...</p>
+        </div>
+      </div>
+    );
   }
 
-  console.log("[AdminGuard] Rendering children...");
+  // Only render children if user is admin
+  if (!isAdmin) {
+    return null;
+  }
+
   return <>{children}</>;
 }

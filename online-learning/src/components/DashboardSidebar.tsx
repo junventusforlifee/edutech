@@ -57,7 +57,8 @@ export default function DashboardSidebar() {
       console.warn("Dashboard logout: unable to clear localStorage", error);
     }
 
-    router.push("/");
+    // Use replace instead of push to prevent back button from returning to dashboard
+    router.replace("/");
   };
 
   return (
